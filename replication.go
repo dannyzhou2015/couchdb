@@ -15,7 +15,7 @@ package couchdb
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+
 	"errors"
 	"fmt"
 	"net/http"
@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	kivik "github.com/go-kivik/kivik/v4"
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 type replicationError struct {

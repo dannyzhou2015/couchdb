@@ -19,8 +19,8 @@ Use the `couch` driver name when using this driver. The DSN should be a full
 URL, likely with login credentials:
 
     import (
-        kivik "github.com/go-kivik/kivik/v4"
-        _ "github.com/go-kivik/couchdb/v4" // The CouchDB driver
+        kivik "github.com/dannyzhou2015/kivik/v4"
+        _ "github.com/dannyzhou2015/couchdb/v4" // The CouchDB driver
     )
 
     client, err := kivik.New("couch", "http://username:password@127.0.0.1:5984/")

@@ -14,7 +14,7 @@ package chttp
 
 import (
 	"context"
-	"encoding/json"
+
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -24,7 +24,7 @@ import (
 	"gitlab.com/flimzy/testy"
 	"golang.org/x/net/publicsuffix"
 
-	kivik "github.com/go-kivik/kivik/v4"
+	kivik "github.com/dannyzhou2015/kivik/v4"
 )
 
 type mockRT struct {

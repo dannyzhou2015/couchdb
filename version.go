@@ -14,10 +14,11 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"net/http"
 
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/kivik/v4/driver"
+	jsoniter "github.com/json-iterator/go"
 )
 
 // Version returns the server's version info.
@@ -33,7 +34,7 @@ func (c *client) Version(ctx context.Context) (*driver.Version, error) {
 }
 
 type info struct {
-	Data     json.RawMessage
+	Data     jsoniter.RawMessage
 	Version  string   `json:"version"`
 	Features []string `json:"features"`
 	Vendor   struct {

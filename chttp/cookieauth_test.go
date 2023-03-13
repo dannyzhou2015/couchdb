@@ -25,7 +25,7 @@ import (
 	"gitlab.com/flimzy/testy"
 	"golang.org/x/net/publicsuffix"
 
-	kivik "github.com/go-kivik/kivik/v4"
+	kivik "github.com/dannyzhou2015/kivik/v4"
 )
 
 func TestCookieAuthAuthenticate(t *testing.T) {

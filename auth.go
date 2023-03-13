@@ -17,8 +17,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	"github.com/go-kivik/kivik/v4"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	"github.com/dannyzhou2015/kivik/v4"
 )
 
 func (c *client) Authenticate(ctx context.Context, a interface{}) error {

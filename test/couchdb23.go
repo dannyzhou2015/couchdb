@@ -15,7 +15,7 @@ package test
 import (
 	"net/http"
 
-	kivik "github.com/go-kivik/kivik/v4"
+	kivik "github.com/dannyzhou2015/kivik/v4"
 	kiviktest "github.com/go-kivik/kiviktest/v4"
 	"github.com/go-kivik/kiviktest/v4/kt"
 )

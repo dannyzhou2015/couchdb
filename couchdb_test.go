@@ -19,7 +19,7 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
-	"github.com/go-kivik/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4"
 )
 
 func TestNewClient(t *testing.T) {

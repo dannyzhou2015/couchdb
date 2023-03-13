@@ -17,7 +17,7 @@ import (
 	"net/http"
 	"time"
 
-	kivik "github.com/go-kivik/kivik/v4"
+	kivik "github.com/dannyzhou2015/kivik/v4"
 )
 
 // CookieAuth provides CouchDB Cookie auth services as described at

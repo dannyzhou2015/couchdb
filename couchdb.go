@@ -18,9 +18,9 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	kivik "github.com/go-kivik/kivik/v4"
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 // couch represents the parent driver instance.

@@ -14,14 +14,15 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"errors"
 	"io"
 	"net/http"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	kivik "github.com/go-kivik/kivik/v4"
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4/driver"
+	jsoniter "github.com/json-iterator/go"
 )
 
 // Changes returns the changes stream for the database.
@@ -55,16 +56,17 @@ func (d *db) Changes(ctx context.Context, opts map[string]interface{}) (driver.C
 
 type continuousChangesParser struct{}
 
-func (p *continuousChangesParser) parseMeta(i interface{}, dec *json.Decoder, key string) error {
+func (p *continuousChangesParser) parseMeta(i interface{}, iter *jsoniter.Iterator, key string) error {
 	meta := i.(*changesMeta)
-	return meta.parseMeta(key, dec)
+	return meta.parseMeta(key, iter)
 }
 
-func (p *continuousChangesParser) decodeItem(i interface{}, dec *json.Decoder) error {
+func (p *continuousChangesParser) decodeItem(i interface{}, iter *jsoniter.Iterator) error {
 	row := i.(*driver.Change)
 	ch := &change{Change: row}
-	if err := dec.Decode(ch); err != nil {
-		return &kivik.Error{HTTPStatus: http.StatusBadGateway, Err: err}
+	iter.ReadVal(ch)
+	if iter.Error != nil {
+		return &kivik.Error{HTTPStatus: http.StatusBadGateway, Err: iter.Error}
 	}
 	ch.Change.Seq = string(ch.Seq)
 	return nil
@@ -76,17 +78,18 @@ type changesMeta struct {
 }
 
 // parseMeta parses result metadata
-func (m *changesMeta) parseMeta(key string, dec *json.Decoder) error {
+func (m *changesMeta) parseMeta(key string, iter *jsoniter.Iterator) error {
 	switch key {
 	case "last_seq":
-		return dec.Decode(&m.lastSeq)
+		iter.ReadVal(&m.lastSeq)
 	case "pending":
-		return dec.Decode(&m.pending)
+		iter.ReadVal(&m.pending)
 	default:
 		// Just consume the value, since we don't know what it means.
-		var discard json.RawMessage
-		return dec.Decode(&discard)
+		var discard jsoniter.RawMessage
+		iter.ReadVal(&discard)
 	}
+	return iter.Error
 }
 
 type changesRows struct {

@@ -14,14 +14,15 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"net/http"
 
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/kivik/v4/driver"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type session struct {
-	Data    json.RawMessage
+	Data    jsoniter.RawMessage
 	Info    authInfo    `json:"info"`
 	UserCtx userContext `json:"userCtx"`
 }

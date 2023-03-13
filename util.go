@@ -13,13 +13,13 @@
 package couchdb
 
 import (
-	"encoding/json"
 	"net/http"
 
-	kivik "github.com/go-kivik/kivik/v4"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	jsoniter "github.com/json-iterator/go"
 )
 
-// deJSONify unmarshals a string, []byte, or json.RawMessage. All other types
+// deJSONify unmarshals a string, []byte, or jsoniter.RawMessage. All other types
 // are returned as-is.
 func deJSONify(i interface{}) (interface{}, error) {
 	var data []byte
@@ -28,7 +28,7 @@ func deJSONify(i interface{}) (interface{}, error) {
 		data = []byte(t)
 	case []byte:
 		data = t
-	case json.RawMessage:
+	case jsoniter.RawMessage:
 		data = []byte(t)
 	default:
 		return i, nil

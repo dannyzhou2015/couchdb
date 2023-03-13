@@ -13,7 +13,6 @@
 package couchdb
 
 import (
-	"encoding/json"
 	"testing"
 
 	"gitlab.com/flimzy/testy"

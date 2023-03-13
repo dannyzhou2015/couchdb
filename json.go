@@ -13,15 +13,15 @@
 package couchdb
 
 import (
-	"encoding/json"
 	"net/http"
 
-	kivik "github.com/go-kivik/kivik/v4"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	jsoniter "github.com/json-iterator/go"
 )
 
 // encodeKey encodes a key to a view query, or similar, to be passed to CouchDB.
 func encodeKey(i interface{}) (string, error) {
-	if raw, ok := i.(json.RawMessage); ok {
+	if raw, ok := i.(jsoniter.RawMessage); ok {
 		return string(raw), nil
 	}
 	raw, err := json.Marshal(i)

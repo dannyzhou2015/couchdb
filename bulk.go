@@ -14,27 +14,29 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"errors"
 	"io"
 	"net/http"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	kivik "github.com/go-kivik/kivik/v4"
-	"github.com/go-kivik/kivik/v4/driver"
+	ejson "encoding/json"
+
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 type bulkResults struct {
 	body io.ReadCloser
-	dec  *json.Decoder
+	dec  *ejson.Decoder
 }
 
 var _ driver.BulkResults = &bulkResults{}
 
 func newBulkResults(body io.ReadCloser) (*bulkResults, error) {
-	dec := json.NewDecoder(body)
+	dec := ejson.NewDecoder(body)
 	// Consume the opening '[' char
-	if err := consumeDelim(dec, json.Delim('[')); err != nil {
+	if err := consumeDelim(dec, ejson.Delim('[')); err != nil {
 		return nil, err
 	}
 	return &bulkResults{
@@ -45,7 +47,7 @@ func newBulkResults(body io.ReadCloser) (*bulkResults, error) {
 
 func (r *bulkResults) Next(update *driver.BulkResult) error {
 	if !r.dec.More() {
-		if err := consumeDelim(r.dec, json.Delim(']')); err != nil {
+		if err := consumeDelim(r.dec, ejson.Delim(']')); err != nil {
 			return err
 		}
 		return io.EOF

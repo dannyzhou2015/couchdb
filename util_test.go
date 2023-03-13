@@ -13,10 +13,10 @@
 package couchdb
 
 import (
-	"encoding/json"
 	"net/http"
 	"testing"
 
+	jsoniter "github.com/json-iterator/go"
 	"gitlab.com/flimzy/testy"
 )
 
@@ -39,8 +39,8 @@ func TestDeJSONify(t *testing.T) {
 			expected: map[string]interface{}{"foo": "bar"},
 		},
 		{
-			name:     "json.RawMessage",
-			input:    json.RawMessage(`{"foo":"bar"}`),
+			name:     "jsoniter.RawMessage",
+			input:    jsoniter.RawMessage(`{"foo":"bar"}`),
 			expected: map[string]interface{}{"foo": "bar"},
 		},
 		{

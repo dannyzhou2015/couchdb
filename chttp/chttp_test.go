@@ -14,7 +14,7 @@ package chttp
 
 import (
 	"context"
-	"encoding/json"
+
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -30,7 +30,8 @@ import (
 	"gitlab.com/flimzy/testy"
 	"golang.org/x/net/publicsuffix"
 
-	"github.com/go-kivik/kivik/v4/errors"
+	"github.com/dannyzhou2015/kivik/v4/errors"
+	jsoniter "github.com/json-iterator/go"
 )
 
 var defaultUA = func() string {
@@ -219,7 +220,7 @@ func TestEncodeBody(t *testing.T) {
 		},
 		{
 			name:     "raw json input",
-			input:    json.RawMessage(`{"foo":"bar"}`),
+			input:    jsoniter.RawMessage(`{"foo":"bar"}`),
 			expected: `{"foo":"bar"}`,
 		},
 		{

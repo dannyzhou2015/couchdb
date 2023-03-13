@@ -14,7 +14,7 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"errors"
 	"fmt"
 	"net/http"
@@ -23,8 +23,8 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
-	kivik "github.com/go-kivik/kivik/v4"
-	"github.com/go-kivik/kivik/v4/driver"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 func TestReplicationError(t *testing.T) {

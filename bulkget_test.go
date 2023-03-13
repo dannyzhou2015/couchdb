@@ -14,7 +14,7 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"errors"
 	"fmt"
 	"io"
@@ -26,7 +26,8 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/kivik/v4/driver"
+	jsoniter "github.com/json-iterator/go"
 )
 
 func TestBulkGet(t *testing.T) {
@@ -353,7 +354,7 @@ func TestDecodeBulkResult(t *testing.T) {
 		expected: bulkResult{
 			ID: "test1",
 			Docs: []bulkResultDoc{{
-				Doc: json.RawMessage(`{"_id":"test1","_rev":"3-1c08032eef899e52f35cbd1cd5f93826","moo":123,"oink":false,"_attachments":{"foo.txt":{"content_type":"text/plain","revpos":2,"digest":"md5-WiGw80mG3uQuqTKfUnIZsg==","length":9,"stub":true}}}`),
+				Doc: jsoniter.RawMessage(`{"_id":"test1","_rev":"3-1c08032eef899e52f35cbd1cd5f93826","moo":123,"oink":false,"_attachments":{"foo.txt":{"content_type":"text/plain","revpos":2,"digest":"md5-WiGw80mG3uQuqTKfUnIZsg==","length":9,"stub":true}}}`),
 			}},
 		},
 	})

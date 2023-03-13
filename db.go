@@ -15,7 +15,6 @@ package couchdb
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -27,17 +26,22 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	kivik "github.com/go-kivik/kivik/v4"
-	"github.com/go-kivik/kivik/v4/driver"
+	ejson "encoding/json"
+
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4/driver"
+
+	jsoniter "github.com/json-iterator/go"
 )
+
+var json = jsoniter.ConfigFastest
 
 type db struct {
 	*client
@@ -96,15 +100,15 @@ func (d *db) rowsQuery(ctx context.Context, path string, opts map[string]interfa
 		payload["keys"] = keys
 	}
 	rowsInit := newRows
-	if queries := opts["queries"]; queries != nil {
-		rowsInit = newMultiQueriesRows
-		delete(opts, "queries")
-		payload["queries"] = queries
-		// Funny that this works even in CouchDB 1.x. It seems 1.x just ignores
-		// extra path elements beyond the view name. So yay for accidental
-		// backward compatibility!
-		path = filepath.Join(path, "queries")
-	}
+	// if queries := opts["queries"]; queries != nil {
+	// 	rowsInit = newMultiQueriesRows
+	// 	delete(opts, "queries")
+	// 	payload["queries"] = queries
+	// 	// Funny that this works even in CouchDB 1.x. It seems 1.x just ignores
+	// 	// extra path elements beyond the view name. So yay for accidental
+	// 	// backward compatibility!
+	// 	path = filepath.Join(path, "queries")
+	// }
 	query, err := optionsToParams(opts)
 	if err != nil {
 		return nil, err
@@ -671,10 +675,10 @@ func attachmentStubs(atts *kivik.Attachments) (map[string]*stub, error) {
 // copyWithAttachmentStubs copies r to w, replacing the _attachment value with the
 // marshaled version of atts.
 func copyWithAttachmentStubs(w io.Writer, r io.Reader, atts map[string]*stub) error {
-	dec := json.NewDecoder(r)
+	dec := ejson.NewDecoder(r)
 	t, err := dec.Token()
 	if err == nil {
-		if t != json.Delim('{') {
+		if t != ejson.Delim('{') {
 			return &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: fmt.Errorf("expected '{', found '%v'", t)}
 		}
 	}
@@ -706,7 +710,7 @@ func copyWithAttachmentStubs(w io.Writer, r io.Reader, atts map[string]*stub) er
 			if _, e := fmt.Fprintf(w, `"%s":`, tp); e != nil {
 				return e
 			}
-			var val json.RawMessage
+			var val jsoniter.RawMessage
 			if e := dec.Decode(&val); e != nil {
 				return e
 			}
@@ -725,8 +729,8 @@ func copyWithAttachmentStubs(w io.Writer, r io.Reader, atts map[string]*stub) er
 			if _, e := w.Write(val); e != nil {
 				return e
 			}
-		case json.Delim:
-			if tp != json.Delim('}') {
+		case ejson.Delim:
+			if tp != ejson.Delim('}') {
 				return fmt.Errorf("expected '}', found '%v'", t)
 			}
 			if _, err := fmt.Fprintf(w, "%v", t); err != nil {
@@ -884,39 +888,39 @@ func (d *db) Purge(ctx context.Context, docMap map[string][]string) (*driver.Pur
 	return result, err
 }
 
-var _ driver.RevsDiffer = &db{}
+// var _ driver.RevsDiffer = &db{}
 
-func (d *db) RevsDiff(ctx context.Context, revMap interface{}) (driver.Rows, error) {
-	options := &chttp.Options{
-		GetBody: chttp.BodyEncoder(revMap),
-		Header: http.Header{
-			chttp.HeaderIdempotencyKey: []string{},
-		},
-	}
-	resp, err := d.Client.DoReq(ctx, http.MethodPost, d.path("_revs_diff"), options)
-	if err != nil {
-		return nil, err
-	}
-	if err = chttp.ResponseError(resp); err != nil {
-		return nil, err
-	}
-	return newRevsDiffRows(ctx, resp.Body), nil
-}
+// func (d *db) RevsDiff(ctx context.Context, revMap interface{}) (driver.Rows, error) {
+// 	options := &chttp.Options{
+// 		GetBody: chttp.BodyEncoder(revMap),
+// 		Header: http.Header{
+// 			chttp.HeaderIdempotencyKey: []string{},
+// 		},
+// 	}
+// 	resp, err := d.Client.DoReq(ctx, http.MethodPost, d.path("_revs_diff"), options)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if err = chttp.ResponseError(resp); err != nil {
+// 		return nil, err
+// 	}
+// 	return newRevsDiffRows(ctx, resp.Body), nil
+// }
 
-type revsDiffParser struct{}
+// type revsDiffParser struct{}
 
-func (p *revsDiffParser) decodeItem(i interface{}, dec *json.Decoder) error {
-	t, err := dec.Token()
-	if err != nil {
-		return err
-	}
-	row := i.(*driver.Row)
-	row.ID = t.(string)
-	return dec.Decode(&row.Value)
-}
+// func (p *revsDiffParser) decodeItem(i interface{}, dec *ejson.Decoder) error {
+// 	t, err := dec.Token()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	row := i.(*driver.Row)
+// 	row.ID = t.(string)
+// 	return dec.Decode(&row.Value)
+// }
 
-func newRevsDiffRows(ctx context.Context, in io.ReadCloser) driver.Rows {
-	iter := newIter(ctx, nil, "", in, &revsDiffParser{})
-	iter.objMode = true
-	return &rows{iter: iter}
-}
+// func newRevsDiffRows(ctx context.Context, in io.ReadCloser) driver.Rows {
+// 	iter := newIter(ctx, nil, "", in, &revsDiffParser{})
+// 	iter.objMode = true
+// 	return &rows{iter: iter}
+// }

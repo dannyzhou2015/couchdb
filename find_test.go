@@ -14,7 +14,7 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -24,7 +24,7 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 func TestExplain(t *testing.T) {

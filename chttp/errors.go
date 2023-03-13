@@ -13,7 +13,6 @@
 package chttp
 
 import (
-	"encoding/json"
 	"fmt"
 	"mime"
 	"net/http"

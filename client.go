@@ -14,15 +14,16 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	kivik "github.com/go-kivik/kivik/v4"
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4/driver"
+	jsoniter "github.com/json-iterator/go"
 )
 
 func (c *client) AllDBs(ctx context.Context, opts map[string]interface{}) ([]string, error) {
@@ -87,8 +88,9 @@ type updatesParser struct{}
 
 var _ parser = &updatesParser{}
 
-func (p *updatesParser) decodeItem(i interface{}, dec *json.Decoder) error {
-	return dec.Decode(i)
+func (p *updatesParser) decodeItem(i interface{}, iter *jsoniter.Iterator) error {
+	iter.ReadVal(i)
+	return iter.Error
 }
 
 func newUpdates(ctx context.Context, body io.ReadCloser) *couchUpdates {

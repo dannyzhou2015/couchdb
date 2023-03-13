@@ -14,7 +14,7 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"errors"
 	"net/http"
 	"testing"
@@ -22,7 +22,7 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 func TestSRUpdate(t *testing.T) {

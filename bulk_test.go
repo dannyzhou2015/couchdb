@@ -14,7 +14,7 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"errors"
 	"io"
 	"io/ioutil"
@@ -24,8 +24,8 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
-	kivik "github.com/go-kivik/kivik/v4"
-	"github.com/go-kivik/kivik/v4/driver"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 func TestBulkDocs(t *testing.T) {

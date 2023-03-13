@@ -15,13 +15,13 @@ package couchdb
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+
 	"io/ioutil"
 	"net/http"
 	"strings"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 // Couch1ConfigNode can be passed to any of the Config-related methods as the

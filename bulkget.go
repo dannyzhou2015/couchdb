@@ -14,12 +14,13 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"fmt"
 	"net/http"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	"github.com/dannyzhou2015/kivik/v4/driver"
+	jsoniter "github.com/json-iterator/go"
 )
 
 func (d *db) BulkGet(ctx context.Context, docs []driver.BulkGetReference, opts map[string]interface{}) (driver.Rows, error) {
@@ -63,8 +64,8 @@ func (e *BulkGetError) Error() string {
 }
 
 type bulkResultDoc struct {
-	Doc   json.RawMessage `json:"ok,omitempty"`
-	Error *BulkGetError   `json:"error,omitempty"`
+	Doc   jsoniter.RawMessage `json:"ok,omitempty"`
+	Error *BulkGetError       `json:"error,omitempty"`
 }
 
 type bulkResult struct {

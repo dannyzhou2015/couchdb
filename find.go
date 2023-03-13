@@ -14,13 +14,13 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+
 	"fmt"
 	"net/http"
 	"path"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 const (

@@ -15,11 +15,12 @@ package couchdb
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+
 	"net/http"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	"github.com/dannyzhou2015/kivik/v4/driver"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type dbStats struct {
@@ -29,8 +30,8 @@ type dbStats struct {
 		External int64 `json:"external"`
 		Active   int64 `json:"active"`
 	} `json:"sizes"`
-	UpdateSeq json.RawMessage `json:"update_seq"` // nolint: govet
-	rawBody   json.RawMessage
+	UpdateSeq jsoniter.RawMessage `json:"update_seq"` // nolint: govet
+	rawBody   jsoniter.RawMessage
 }
 
 func (s *dbStats) UnmarshalJSON(p []byte) error {
@@ -108,7 +109,7 @@ type partitionStats struct {
 		Active   int64 `json:"active"`
 		External int64 `json:"external"`
 	}
-	rawBody json.RawMessage
+	rawBody jsoniter.RawMessage
 }
 
 func (s *partitionStats) UnmarshalJSON(p []byte) error {

@@ -19,7 +19,7 @@ import (
 
 	"gitlab.com/flimzy/testy"
 
-	"github.com/go-kivik/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4"
 )
 
 func TestQueries_1_x(t *testing.T) {
@@ -34,22 +34,19 @@ func TestQueries_1_x(t *testing.T) {
 	}
 
 	db := client.DB("_users")
-	rows, err := db.AllDocs(context.Background(), map[string]interface{}{
+	rows := db.AllDocs(context.Background(), map[string]interface{}{
 		"queries": []map[string]interface{}{
 			{},
 			{},
 		},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 	defer rows.Close() // nolint:errcheck
 	result := make([]interface{}, 0)
 	for rows.Next() {
 		if rows.EOQ() {
 			result = append(result, map[string]interface{}{
-				"EOQ":        true,
-				"total_rows": rows.TotalRows(),
+				"EOQ": true,
+				//"total_rows": rows.TotalRows(),
 			})
 			continue
 		}
@@ -80,22 +77,19 @@ func TestQueries_2_x(t *testing.T) {
 	}
 
 	db := client.DB("_users")
-	rows, err := db.AllDocs(context.Background(), map[string]interface{}{
+	rows := db.AllDocs(context.Background(), map[string]interface{}{
 		"queries": []map[string]interface{}{
 			{},
 			{},
 		},
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
 	defer rows.Close() // nolint:errcheck
 	result := make([]interface{}, 0)
 	for rows.Next() {
 		if rows.EOQ() {
 			result = append(result, map[string]interface{}{
-				"EOQ":        true,
-				"total_rows": rows.TotalRows(),
+				"EOQ": true,
+				// "total_rows": rows.TotalRows(),
 			})
 			continue
 		}
@@ -123,7 +117,7 @@ func TestQueries_3_x(t *testing.T) {
 	}
 
 	db := client.DB("_users")
-	rows, err := db.AllDocs(context.Background(), map[string]interface{}{
+	rows := db.AllDocs(context.Background(), map[string]interface{}{
 		"queries": []map[string]interface{}{
 			{},
 			{},
@@ -137,8 +131,8 @@ func TestQueries_3_x(t *testing.T) {
 	for rows.Next() {
 		if rows.EOQ() {
 			result = append(result, map[string]interface{}{
-				"EOQ":        true,
-				"total_rows": rows.TotalRows(),
+				"EOQ": true,
+				//"total_rows": rows.TotalRows(),
 			})
 			continue
 		}

@@ -17,13 +17,14 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	kivik "github.com/go-kivik/kivik/v4"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	kivik "github.com/dannyzhou2015/kivik/v4"
 	"github.com/go-kivik/kiviktest/v4/kt"
 )
 

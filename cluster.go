@@ -16,8 +16,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
-	"github.com/go-kivik/kivik/v4/driver"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
+	"github.com/dannyzhou2015/kivik/v4/driver"
 )
 
 func (c *client) ClusterStatus(ctx context.Context, opts map[string]interface{}) (string, error) {

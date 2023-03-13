@@ -24,7 +24,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/go-kivik/couchdb/v4/chttp"
+	"github.com/dannyzhou2015/couchdb/v4/chttp"
 	"github.com/go-kivik/kiviktest/v4/kt"
 )
 

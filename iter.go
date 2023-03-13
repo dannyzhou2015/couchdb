@@ -14,7 +14,8 @@ package couchdb
 
 import (
 	"context"
-	"encoding/json"
+	ejson "encoding/json"
+
 	"errors"
 	"fmt"
 	"io"
@@ -22,15 +23,16 @@ import (
 	"sync"
 	"sync/atomic"
 
-	kivik "github.com/go-kivik/kivik/v4"
+	kivik "github.com/dannyzhou2015/kivik/v4"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type parser interface {
-	decodeItem(interface{}, *json.Decoder) error
+	decodeItem(interface{}, *jsoniter.Iterator) error
 }
 
 type metaParser interface {
-	parseMeta(interface{}, *json.Decoder, string) error
+	parseMeta(interface{}, *jsoniter.Iterator, string) error
 }
 
 type cancelableReadCloser struct {
@@ -128,7 +130,7 @@ type iter struct {
 	// docid. This was added for the _revs_diff endpoint.
 	objMode bool
 
-	dec    *json.Decoder
+	iter   *jsoniter.Iterator
 	closed int32
 }
 
@@ -145,9 +147,9 @@ func (i *iter) next(row interface{}) error {
 	if atomic.LoadInt32(&i.closed) == 1 {
 		return io.EOF
 	}
-	if i.dec == nil {
+	if i.iter == nil {
 		// We haven't begun yet
-		i.dec = json.NewDecoder(i.body)
+		i.iter = jsoniter.Parse(jsoniter.ConfigFastest, i.body, 4096)
 		if err := i.begin(); err != nil {
 			return &kivik.Error{HTTPStatus: http.StatusBadGateway, Err: err}
 		}
@@ -170,48 +172,58 @@ func (i *iter) begin() error {
 	if i.expectedKey == "" && !i.objMode {
 		return nil
 	}
-	// consume the first '{'
-	if err := consumeDelim(i.dec, json.Delim('{')); err != nil {
-		return err
-	}
+	// // consume the first '{'
+	// if err := consumeDelim(i.dec, json.Delim('{')); err != nil {
+	// 	return err
+	// }
 	if i.objMode {
 		return nil
 	}
-	for {
-		key, err := nextKey(i.dec)
-		if err != nil {
-			return err
-		}
+
+	for key := i.iter.ReadObject(); key != ""; key = i.iter.ReadObject() {
 		if key == i.expectedKey {
-			// Consume the first '['
-			return consumeDelim(i.dec, json.Delim('['))
-		}
-		if err := i.parseMeta(key); err != nil {
-			return err
+			return nil
+		} else {
+			if err := i.parseMeta(key); err != nil {
+				return err
+			}
 		}
 	}
+	return io.EOF //fmt.Errorf("expected key \"%s\" not found in body", i.expectedKey)
+
+	// for {
+	// 	key, err := nextKey(i.iter)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if key == i.expectedKey {
+	// 		// Consume the first '['
+	// 		return consumeDelim(i.dec, json.Delim('['))
+	// 	}
+	// 	if err := i.parseMeta(key); err != nil {
+	// 		return err
+	// 	}
+	// }
 }
 
-func nextKey(dec *json.Decoder) (string, error) {
-	t, err := dec.Token()
-	if err != nil {
-		// I can't find a test case to trigger this, so it remains uncovered.
-		return "", err
-	}
-	key, ok := t.(string)
-	if !ok {
-		// The JSON parser should never permit this
-		return "", fmt.Errorf("Unexpected token: (%T) %v", t, t)
-	}
-	return key, nil
-}
+// func nextKey(iter *jsoniter.Iterator) (string, error) {
+// 	iter.ReadArray()
+// 	iter.Read()
+// 	t := iter.ReadString()
+// 	iter.ReadString()
+// 	if t.ValueType() != jsoniter.StringValue {
+// 		// The JSON parser should never permit this
+// 		return "", fmt.Errorf("Unexpected token: (%T) %v", t, t)
+// 	}
+// 	return t.ToString(), nil
+// }
 
 func (i *iter) parseMeta(key string) error {
 	if i.meta == nil {
 		return nil
 	}
 	if mp, ok := i.parser.(metaParser); ok {
-		return mp.parseMeta(i.meta, i.dec, key)
+		return mp.parseMeta(i.meta, i.iter, key)
 	}
 	return nil
 }
@@ -223,53 +235,60 @@ func (i *iter) finish() (err error) {
 			err = e2
 		}
 	}()
-	if i.expectedKey == "" && !i.objMode {
-		_, err := i.dec.Token()
-		if err != nil && err != io.EOF {
-			return &kivik.Error{HTTPStatus: http.StatusBadGateway, Err: err}
-		}
-		return nil
-	}
-	if i.objMode {
-		err := consumeDelim(i.dec, json.Delim('}'))
-		if err != nil && err != io.EOF {
-			return &kivik.Error{HTTPStatus: http.StatusBadGateway, Err: err}
-		}
-		return nil
-	}
-	if err := consumeDelim(i.dec, json.Delim(']')); err != nil {
-		return err
-	}
-	for i.dec.More() {
-		t, err := i.dec.Token()
-		if err != nil {
+	for key := i.iter.ReadObject(); key != ""; key = i.iter.ReadObject() {
+		if err := i.parseMeta(key); err != nil {
 			return err
 		}
-		switch v := t.(type) {
-		case json.Delim:
-			if v != json.Delim('}') {
-				// This should never happen, as the JSON parser should prevent it.
-				return fmt.Errorf("Unexpected JSON delimiter: %c", v)
-			}
-		case string:
-			if err := i.parseMeta(v); err != nil {
-				return err
-			}
-		default:
-			// This should never happen, as the JSON parser would never get
-			// this far.
-			return fmt.Errorf("Unexpected JSON token: (%T) '%s'", t, t)
-		}
+		//i.iter.Skip()
 	}
-	return consumeDelim(i.dec, json.Delim('}'))
+	return
+	// if i.expectedKey == "" && !i.objMode {
+	// 	_, err := i.dec.Token()
+	// 	if err != nil && err != io.EOF {
+	// 		return &kivik.Error{HTTPStatus: http.StatusBadGateway, Err: err}
+	// 	}
+	// 	return nil
+	// }
+	// if i.objMode {
+	// 	err := consumeDelim(i.dec, ejson.Delim('}'))
+	// 	if err != nil && err != io.EOF {
+	// 		return &kivik.Error{HTTPStatus: http.StatusBadGateway, Err: err}
+	// 	}
+	// 	return nil
+	// }
+	// if err := consumeDelim(i.dec, ejson.Delim(']')); err != nil {
+	// 	return err
+	// }
+	// for i.dec.More() {
+	// 	t, err := i.dec.Token()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	switch v := t.(type) {
+	// 	case ejson.Delim:
+	// 		if v != ejson.Delim('}') {
+	// 			// This should never happen, as the JSON parser should prevent it.
+	// 			return fmt.Errorf("Unexpected JSON delimiter: %c", v)
+	// 		}
+	// 	case string:
+	// 		if err := i.parseMeta(v); err != nil {
+	// 			return err
+	// 		}
+	// 	default:
+	// 		// This should never happen, as the JSON parser would never get
+	// 		// this far.
+	// 		return fmt.Errorf("Unexpected JSON token: (%T) '%s'", t, t)
+	// 	}
+	// }
+	//return consumeDelim(i.dec, ejson.Delim('}'))
 	// return nil
 }
 
 func (i *iter) nextRow(row interface{}) error {
-	if !i.dec.More() {
+	if !i.iter.ReadArray() {
 		return io.EOF
 	}
-	return i.parser.decodeItem(row, i.dec)
+	return i.parser.decodeItem(row, i.iter)
 }
 
 func (i *iter) Close() error {
@@ -283,12 +302,12 @@ func (i *iter) Close() error {
 
 // consumeDelim consumes the expected delimiter from the stream, or returns an
 // error if an unexpected token was found.
-func consumeDelim(dec *json.Decoder, expectedDelim json.Delim) error {
+func consumeDelim(dec *ejson.Decoder, expectedDelim ejson.Delim) error {
 	t, err := dec.Token()
 	if err != nil {
 		return &kivik.Error{HTTPStatus: http.StatusBadGateway, Err: err}
 	}
-	d, ok := t.(json.Delim)
+	d, ok := t.(ejson.Delim)
 	if !ok {
 		return &kivik.Error{HTTPStatus: http.StatusBadGateway, Err: fmt.Errorf("Unexpected token %T: %v", t, t)}
 	}

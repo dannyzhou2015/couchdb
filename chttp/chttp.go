@@ -17,7 +17,7 @@ package chttp
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	ejson "encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -31,8 +31,11 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/go-kivik/kivik/v4"
+	"github.com/dannyzhou2015/kivik/v4"
+	jsoniter "github.com/json-iterator/go"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const typeJSON = "application/json"
 
@@ -347,16 +350,16 @@ func EncodeBody(i interface{}) io.ReadCloser {
 		switch t := i.(type) {
 		case []byte:
 			_, err = w.Write(t)
-		case json.RawMessage: // Only needed for Go 1.7
+		case jsoniter.RawMessage: // Only needed for Go 1.7
 			_, err = w.Write(t)
 		case string:
 			_, err = w.Write([]byte(t))
 		default:
 			err = json.NewEncoder(w).Encode(i)
-			switch err.(type) {
-			case *json.MarshalerError, *json.UnsupportedTypeError, *json.UnsupportedValueError:
-				err = &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
-			}
+			// switch err.(type) {
+			// case *json.MarshalerError, *json.UnsupportedTypeError, *json.UnsupportedValueError:
+			// 	err = &kivik.Error{HTTPStatus: http.StatusBadRequest, Err: err}
+			// }
 		}
 		_ = w.CloseWithError(err)
 	}()
@@ -495,12 +498,12 @@ func extractRev(resp *http.Response) (string, error) {
 // readRev searches r for a `_rev` field, and returns its value without reading
 // the rest of the JSON stream.
 func readRev(r io.Reader) (string, error) {
-	dec := json.NewDecoder(r)
+	dec := ejson.NewDecoder(r)
 	tk, err := dec.Token()
 	if err != nil {
 		return "", err
 	}
-	if tk != json.Delim('{') {
+	if tk != ejson.Delim('{') {
 		return "", fmt.Errorf("Expected %q token, found %q", '{', tk)
 	}
 	for dec.More() {

@@ -13,10 +13,10 @@
 package couchdb
 
 import (
-	"encoding/json"
 	"net/http"
 	"testing"
 
+	jsoniter "github.com/json-iterator/go"
 	"gitlab.com/flimzy/testy"
 )
 
@@ -41,8 +41,8 @@ func TestEncodeKey(t *testing.T) {
 		input:    []byte("foo"),
 		expected: `"Zm9v"`,
 	})
-	tests.Add("json.RawMessage", tst{
-		input:    json.RawMessage(`"foo"`),
+	tests.Add("jsoniter.RawMessage", tst{
+		input:    jsoniter.RawMessage(`"foo"`),
 		expected: `"foo"`,
 	})
 
